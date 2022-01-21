@@ -20,12 +20,20 @@ APro4Character::APro4Character()
 
 	CameraSetting();
 	MovementSetting();
-	WeaponSetting();
+	//WeaponSetting();
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh>SK_Mannequin(TEXT("/Game/Mannequin/Character/Mesh/SK_Mannequin.SK_Mannequin"));
 	if (SK_Mannequin.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(SK_Mannequin.Object);
+	}
+
+	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+
+	static ConstructorHelpers::FClassFinder<UAnimInstance>SK_ANIM(TEXT("/Game/Mannequin/Animations/UE4AnimBluprint.UE4AnimBluprint_C"));
+	if (SK_ANIM.Succeeded())
+	{
+		GetMesh()->SetAnimInstanceClass(SK_ANIM.Class);
 	}
 }
 
@@ -53,12 +61,13 @@ void APro4Character::CameraSetting()
 void APro4Character::MovementSetting()
 {
 	GetCharacterMovement()->JumpZVelocity = 400.0f;
+	CurrentCharacterState = CharacterState::Stand;
 }
 
-void APro4Character::WeaponSetting()
-{
-	SetWeaponMode(WeaponMode::Disarming);
-}
+//void APro4Character::WeaponSetting()
+//{
+	//SetWeaponMode(WeaponMode::Disarming);
+//}
 
 // Called every frame
 void APro4Character::Tick(float DeltaTime)
@@ -72,8 +81,14 @@ void APro4Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PlayerInputComponent->BindAction(TEXT("Jump"), EInputEvent::IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction(TEXT("Attack"), EInputEvent::IE_Pressed, this, &APro4Character::Attack);
+	PlayerInputComponent->BindAction(TEXT("Jump"), EInputEvent::IE_Pressed, this, &APro4Character::Jump);
+	PlayerInputComponent->BindAction(TEXT("Fire"), EInputEvent::IE_Pressed, this, &APro4Character::Fire);
+	PlayerInputComponent->BindAction(TEXT("Sit"), EInputEvent::IE_Pressed, this, &APro4Character::Sitting);
+	PlayerInputComponent->BindAction(TEXT("Lie"), EInputEvent::IE_Pressed, this, &APro4Character::Lying);
+	PlayerInputComponent->BindAction(TEXT("Key1"), EInputEvent::IE_Pressed, this, &APro4Character::EquipMain1);
+	PlayerInputComponent->BindAction(TEXT("Key2"), EInputEvent::IE_Pressed, this, &APro4Character::EquipMain2);
+	PlayerInputComponent->BindAction(TEXT("Key3"), EInputEvent::IE_Pressed, this, &APro4Character::EquipSub);
+	PlayerInputComponent->BindAction(TEXT("Key4"), EInputEvent::IE_Pressed, this, &APro4Character::EquipATW);
 
 	PlayerInputComponent->BindAxis(TEXT("MoveForward"), this, &APro4Character::UpDown);
 	PlayerInputComponent->BindAxis(TEXT("MoveRight"), this, &APro4Character::LeftRight);
@@ -101,7 +116,139 @@ void APro4Character::Turn(float NewAxisValue)
 	AddControllerYawInput(NewAxisValue);
 }
 
-void APro4Character::Attack()
+void APro4Character::Jump()
 {
-	switch()
+	switch (CurrentCharacterState)
+	{
+	case CharacterState::Stand:
+		Super::Jump();
+		break;
+	case CharacterState::Sit:
+		UE_LOG(Pro4, Log, TEXT("Stand."));
+		CurrentCharacterState = CharacterState::Stand;
+		break;
+	case CharacterState::Lie:
+		UE_LOG(Pro4, Log, TEXT("Stand."));
+		CurrentCharacterState = CharacterState::Stand;
+		break;
+	}
+	
+
+}
+
+void APro4Character::Fire()
+{
+	switch (CurrentWeaponMode)
+	{
+	case WeaponMode::Main1:
+		UE_LOG(Pro4, Log, TEXT("Fire1."));
+		break;
+	case WeaponMode::Main2:
+		UE_LOG(Pro4, Log, TEXT("Fire2."));
+		break;
+	case WeaponMode::Sub:
+		UE_LOG(Pro4, Log, TEXT("FireSub."));
+		break;
+	case WeaponMode::ATW:
+		UE_LOG(Pro4, Log, TEXT("Throw."));
+		break;
+	case WeaponMode::Disarming:
+		UE_LOG(Pro4, Log, TEXT("Fist."));
+		break;
+	}
+	UE_LOG(Pro4, Log, TEXT("Attack"));
+}
+
+void APro4Character::Sitting()
+{
+	switch (CurrentCharacterState)
+	{
+	case CharacterState::Stand:
+		UE_LOG(Pro4, Log, TEXT("Sit."));
+		CurrentCharacterState = CharacterState::Sit;
+		break;
+	case CharacterState::Sit:
+		UE_LOG(Pro4, Log, TEXT("Stand."));
+		CurrentCharacterState = CharacterState::Stand;
+		break;
+	case CharacterState::Lie:
+		UE_LOG(Pro4, Log, TEXT("Sit."));
+		CurrentCharacterState = CharacterState::Sit;
+		break;
+	}
+}
+
+void APro4Character::Lying()
+{
+	switch (CurrentCharacterState)
+	{
+	case CharacterState::Stand:
+		UE_LOG(Pro4, Log, TEXT("Lie."));
+		CurrentCharacterState = CharacterState::Lie;
+		break;
+	case CharacterState::Sit:
+		UE_LOG(Pro4, Log, TEXT("Lie."));
+		CurrentCharacterState = CharacterState::Lie;
+		break;
+	case CharacterState::Lie:
+		UE_LOG(Pro4, Log, TEXT("Stand."));
+		CurrentCharacterState = CharacterState::Stand;
+		break;
+	}
+}
+
+void APro4Character::EquipMain1()
+{
+	if (CurrentWeaponMode == WeaponMode::Main1)
+	{
+		UE_LOG(Pro4, Log, TEXT("Disarming."));
+		CurrentWeaponMode = WeaponMode::Disarming;
+	}
+	else
+	{
+		UE_LOG(Pro4, Log, TEXT("EquipMain1."));
+		CurrentWeaponMode = WeaponMode::Main1;
+	}
+}
+
+void APro4Character::EquipMain2()
+{
+	if (CurrentWeaponMode == WeaponMode::Main2)
+	{
+		UE_LOG(Pro4, Log, TEXT("Disarming."));
+		CurrentWeaponMode = WeaponMode::Disarming;
+	}
+	else
+	{
+		UE_LOG(Pro4, Log, TEXT("EquipMain2."));
+		CurrentWeaponMode = WeaponMode::Main2;
+	}
+}
+
+void APro4Character::EquipSub()
+{
+	if (CurrentWeaponMode == WeaponMode::Sub)
+	{
+		UE_LOG(Pro4, Log, TEXT("Disarming."));
+		CurrentWeaponMode = WeaponMode::Disarming;
+	}
+	else
+	{
+		UE_LOG(Pro4, Log, TEXT("EquipSub."));
+		CurrentWeaponMode = WeaponMode::Sub;
+	}
+}
+
+void APro4Character::EquipATW()
+{
+	if (CurrentWeaponMode == WeaponMode::ATW)
+	{
+		UE_LOG(Pro4, Log, TEXT("Disarming."));
+		CurrentWeaponMode = WeaponMode::Disarming;
+	}
+	else
+	{
+		UE_LOG(Pro4, Log, TEXT("ATW."));
+		CurrentWeaponMode = WeaponMode::ATW;
+	}
 }

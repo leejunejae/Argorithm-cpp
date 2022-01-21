@@ -21,14 +21,23 @@ protected:
 
 	enum class WeaponMode
 	{
-		Gun,
-		Pistol,
-		Knife,
+		Main1,
+		Main2,
+		Sub,
 		ATW,
 		Disarming
 	};
 
-	WeaponMode CurrentWeaponMode = WeaponMode::Disarming;
+	WeaponMode CurrentWeaponMode=WeaponMode::Disarming;
+
+	enum class CharacterState
+	{
+		Stand,
+		Sit,
+		Lie,
+	};
+
+	CharacterState CurrentCharacterState = CharacterState::Stand;
 
 public:	
 	// Called every frame
@@ -46,8 +55,15 @@ public:
 private:
 	void MovementSetting();
 	void CameraSetting();
-	void WeaponSetting();
-	void Attack();
+	//void WeaponSetting();
+	void Fire();
+	void Sitting();
+	void Lying();
+	void Jump();
+	void EquipMain1();
+	void EquipMain2();
+	void EquipSub();
+	void EquipATW();
 
 	void UpDown(float NewAxisValue);
 	void LeftRight(float NewAxisValue);
